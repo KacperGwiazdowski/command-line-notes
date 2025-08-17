@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"time"
 )
@@ -33,7 +34,10 @@ func main() {
 
 	now := time.Now().Local().Format("15:04:05")
 
-	file.WriteString(now + " - " + noteText + "\n")
+	note := now + " - " + noteText + "\n"
+
+	fmt.Println(note)
+	file.WriteString(note)
 
 }
 
