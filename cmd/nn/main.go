@@ -7,7 +7,6 @@ import (
 )
 
 func main() {
-
 	clnPath, err := os.UserHomeDir()
 	clnPath = clnPath + "/cln"
 	if err != nil {
@@ -22,7 +21,7 @@ func main() {
 
 	noteText := args[1]
 
-	today := time.Now().Local().Format("01-02-2006")
+	today := time.Now().Local().Format("02-01-2006")
 
 	notesPath := clnPath + "/" + today + ".md"
 
@@ -38,7 +37,6 @@ func main() {
 
 	fmt.Println(note)
 	file.WriteString(note)
-
 }
 
 func pathExists(path string) bool {
