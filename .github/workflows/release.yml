@@ -1,0 +1,64 @@
+name: Go Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux, windows, darwin]
+        goarch: [amd64, arm64]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Build
+        run: |
+          mkdir -p dist
+          BIN_NAME="nn"
+          OUT="dist/${BIN_NAME}-${{ matrix.goos }}-${{ matrix.goarch }}"
+
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            OUT="${OUT}.exe"
+          fi
+
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o "$OUT"
+
+          if [ "${{ matrix.goos }}" = "windows" ]; then
+            zip -j "${OUT%.exe}.zip" "$OUT"
+            rm "$OUT"
+          else
+            tar -czf "${OUT}.tar.gz" -C dist "$(basename "$OUT")"
+            rm "$OUT"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-files
+          path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./dist
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: ./dist/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
